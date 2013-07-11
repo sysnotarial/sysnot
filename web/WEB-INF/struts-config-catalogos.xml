@@ -21,9 +21,14 @@
     <action-mappings>        
         <action path="/Catalogos/Clientes" type="com.sysnot.control.ClientesDispatchAction" 
                 parameter="dispatch" name="ClienteForm"/>  
-         <action path="/Clientes" forward="/jsp/administracion/catalogos/clientes.jsp"/>      
+        
+         <action path="/Clientes" forward="/jsp/administracion/catalogos/clientes.jsp"/>  
+             
         <action path="/ClientesListar" type="com.sysnot.control.ClientesDispatchAction" 
-                parameter="dispatch" name="ClienteForm"/>           
+                parameter="dispatch" name="ClienteForm"/>
+        
+        <action path="/MenuListar" type="com.sysnot.control.MenuDispatchAction" 
+                parameter="dispatch" name="ClienteForm"/>
     </action-mappings>
     <!--
     <controller processorClass="org.apache.struts.tiles.TilesRequestProcessor"/>
