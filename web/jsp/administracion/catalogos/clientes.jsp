@@ -13,7 +13,7 @@
     <body>
         <form name="clientes" id="clientes" action="Catalogos/Clientes.do?dispatch=registrar" method="post">
             <fieldset>
-            <label for="idcliente">ID Cliente</label>
+            <label for="idcliente">ID Clientessss</label>
             <input type="text" name="idcliente" id="idcliente"/> 
             <br>
             <label for="regimenfiscal">R&eacute;gimen Fiscal</label>
