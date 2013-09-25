@@ -3,66 +3,78 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>JSP Page</title>
+        <link href="css/smoothness/jquery-ui-1.10.3.custom.css" rel="stylesheet">
         <script type="text/javascript" src="./js/jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="./js/jquery-ui-1.10.3.custom.min.js"></script>         
+        <script type="text/javascript" src="./js/jquery.cookie.js"></script>       
         <script type="text/javascript" src="./js/Sysnot.js"></script>
-        <script type="text/javascript" src="./js/jquery-ui-1.10.2.custom.min.js"></script>
         <link rel="stylesheet" type="text/css" href="./css/main.css"/>
         <script type="text/javascript">
-            /*var path="<%=request.getContextPath()%>";
-            function _onload(){
-                $.ajax({
-                  type: "GET",
-                  url: path+"/ServiceDispatch",
-                  //data: { serviceName: "clientes_listar",p_page:1,p_limit:4 }
-                  //data: { serviceName: "sp_autenticar",p_clave:"system",p_password:"sysnot" }   
-                  data: { serviceName: "menu_listar",p_usuario:1 }
-                }).done(function(data ) {
-                  alert( "Data Saved: " + data);
-                })
-            }*/
            function _onload(){
-               Sysnot.plugins();
-               return;
-               Sysnot.plugins();
-               Sysnot.serviceRequest({
-                                     services: [{SERVICE: '',serviceName:'menu_listar', p_usuario:1}
-            ],
-                                     onsuccess: function(data){
-                                         alert(data);
-                                         var modal = $('<div/>');
-                                         modal.append(document.createTextNode('Nada'));
-                                         modal.sDialog({ modal: true });
-                                     }
-                             })
+               //Sysnot.plugins();
+               loginClick();
+               if(Sysnot.env.idSesion!=null){
+                   $('#login').remove();
+                   decargaMenu();
+               }
            }
            
-           //function login(){
-           $(document).ready(function(){
+           function loginClick(){
             $('#blogin').click(function(){
                 Sysnot.serviceRequest({
                                      services: [
                                          {SERVICE: '',
                                              serviceName:'sp_autenticar', 
-                                             p_clave:$('#usuario').val(),
+                                             p_usuario:$('#usuario').val(),
                                              p_password:$('#password').val()                                             
                                          }
                                      ],
                                      onsuccess: function(data){
-                                         alert(data);                                        
+                                         Sysnot.env.idSesion = data[0][0].p_idsesion;
+                                         $.cookie('Sysnot.idsesion', Sysnot.env.idSesion, { path: '/' });
+                                         decargaMenu();
+                                         $('#login').remove();
                                      }
                              })
             });
-           });
-           //}
+           }
+           
+           function creaMenu(data){     
+            for(var i=0; i<data.length;i++ ){
+                $('#menu').append('<li class="li">'+data[i].titulo+'</li>');
+            }
+            var limenu = $('#menu>li');
+            limenu.css({'display':'inline','list-style-type':'none','margin':'0 5px 0 5px','width':'30em','height':'1.5em','border':'1px solid #ccc'});
+           }
+           
+           function decargaMenu(){
+               Sysnot.serviceRequest({
+                                     services: [
+                                         {SERVICE: '',
+                                             serviceName:'menu_listar', 
+                                             p_usuario:3//$('#usuario').val()                                            
+                                         }
+                                     ],
+                                     onsuccess: function(data){
+                                         creaMenu(data[0]);
+                                         Sysnot.serviceRequest({services:[{SERVICE:'',serviceName:''}],url:'index.html',onsuccess: function(){}});
+                                     }
+                             })
+           }
+           
         </script>
     </head>
     <body onload="_onload()">
-        <div id="login">
-            <label for="usuario">Nombre de usuario</label><br>
-            <input type="text" id="usuario" name="usuario"/><br>
-            <label for="password">Contrase&ntilde;a</label><br>
-            <input type="password" id="password" name="password"/><br><br>
-            <button id="blogin">Iniciar sesión</button>
+        <div id="wrapper">
+            <div id="login">
+                <label for="usuario">Nombre de usuario</label><br>
+                <input type="text" id="usuario" name="usuario"/><br>
+                <label for="password">Contrase&ntilde;a</label><br>
+                <input type="password" id="password" name="password"/><br><br>
+                <button id="blogin">Iniciar sesión</button>
+            </div>
+        
+            <ul id="menu"></ul>
         </div>
     </body>
 </html>

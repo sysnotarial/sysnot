@@ -82,39 +82,50 @@ public class ServiceDispatch extends HttpServlet {
                     prepareCall.setNull(nombreparam, Types.NULL);
                 }
             }
-            ResultSet rs = prepareCall.executeQuery();
-            ResultSetMetaData rsmd = rs.getMetaData();
+            Boolean results = prepareCall.execute();
+            ResultSet rs = null;
+            ResultSetMetaData rsmd = null;
+            int rsCount = 0;
+            int recCount;
+            Gson json=new Gson();
             writer.write("[");
-            if(rs.next()){
-                Map<String,Object> row=new HashMap();                
-                for (int i = 1; i < rsmd.getColumnCount(); i++) {
-                    int type = rsmd.getColumnType(i);
-                    if (type == Types.VARCHAR || type == Types.CHAR) {
-                        row.put(rsmd.getColumnName(i),rs.getString(i));
-                    } else {
-                        row.put(rsmd.getColumnName(i),Long.toString(rs.getLong(i)));
-                    }
+            while(results){
+                if(rsCount>0) writer.write(",");
+                rs = prepareCall.getResultSet();
+                rsmd = rs.getMetaData();
+                recCount = 0;
+                writer.write("[");
+                while (rs.next()) {
+                    if(recCount>0) writer.write(",");
+                    Map<String,Object> row=new HashMap();
+                    
+                    for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                        int type = rsmd.getColumnType(i);
+                        if (type == Types.VARCHAR || type == Types.CHAR) {
+                            row.put(rsmd.getColumnName(i),rs.getString(i));
+                        } else {
+                            row.put(rsmd.getColumnName(i),Long.toString(rs.getLong(i)));
+                        }
+                    }                        
+                        writer.write(json.toJson(row));
+                        recCount++;
                 }
-                Gson json=new Gson();
-                writer.write(json.toJson(row));                
+                rs.close();
+                results = prepareCall.getMoreResults();
+                writer.write("]");
+                rsCount++; 
             }
-            while (rs.next()) {
-                writer.write(",");
-                Map<String,Object> row=new HashMap();
-                for (int i = 1; i < rsmd.getColumnCount(); i++) {
-                    int type = rsmd.getColumnType(i);
-                    if (type == Types.VARCHAR || type == Types.CHAR) {
-                        row.put(rsmd.getColumnName(i),rs.getString(i));
-                    } else {
-                        row.put(rsmd.getColumnName(i),Long.toString(rs.getLong(i)));
-                    }
-                }
-                Gson json=new Gson();
-                writer.write(json.toJson(row));
-            }
-            writer.write("]");
+            prepareCall.close();
+            writer.write("]");                
+            
         } catch (SQLException ex) {
+            Gson json=new Gson();
             String message = ex.getMessage();
+            if (message.indexOf("EXCEPCION USUARIO:")>=0)
+                message = message.replace("EXCEPCION USUARIO:", "");
+            writer.write("<EXCEPTION>");
+            writer.write(json.toJson(message));
+            writer.write("</EXCEPTION>");
         }
     }
 }

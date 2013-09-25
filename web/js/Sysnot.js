@@ -3,15 +3,19 @@
  * Basada en Jquery
  */
 
-var Sysnot = new Object()
+var Sysnot = {};
 Sysnot.webHome = '/SysNot/';
+Sysnot.env = {
+    'idSesion':$.cookie('Sysnot.idsesion')
+}
 
 Sysnot.serviceRequest = function (params) {
 	if (!params || typeof (params) != 'object') params = {}
 	if (typeof (params.onsuccess) != 'function') throw 'Se debe especificar el objeto [params.onsuccess]'
 	if (typeof (params.onerror) != 'function') params.onerror = null
-
-	if (!params.services) throw 'Se debe especificar el objeto [params.services]'
+        if (!params.url) params.url='ServiceDispatch';
+        
+	//if (!params.services) throw 'Se debe especificar el objeto [params.services]'
 	else if ($.isArray(params.services));
 	else if (typeof (params.services) == 'object') params.services = [params.services]
 	else throw '[params.services] debe ser un Array o un Servicio'
@@ -26,12 +30,24 @@ Sysnot.serviceRequest = function (params) {
 		onerror: params.onerror,
 		error: function (jqXHR, textStatus, errorThrown) {
 			if (this.onerror == null) {
+                                //alert(errorThrown);
 				var modal = $('<div/>');
-				modal.append(document.createTextNode(errorThrown));
-				   modal.sDialog({ modal: true });
-				return
+                                modal.append(document.createTextNode(errorThrown));                               
+				modal.dialog({
+                                        width: 400,
+                                        closeOnEscape:true,
+                                        buttons: [
+                                                {
+                                                        text: "Ok",
+                                                        click: function() {
+                                                                $( this ).dialog( "close" );
+                                                        }
+                                                }
+                                        ]
+                                });
+				return;
 			}
-			this.onerror(errorThrown)
+			this.onerror(errorThrown);
 		},
 		success: function (data, textStatus, jqXHR) {
 			if (this.onsuccess == null) return
@@ -50,7 +66,7 @@ Sysnot.serviceRequest = function (params) {
 		for (var j in params.services[i])
 			if (typeof (params.services[i][j]) != 'undefined' && params.services[i][j] != null)
 				request.data[/*"S" + i + "_" +*/ j] = params.services[i][j];//SITRAC5.serializeParam(params.services[i][j])
-	$.ajax(Sysnot.webHome + 'ServiceDispatch', request)
+	$.ajax(Sysnot.webHome + params.url, request)
 }
 
 Sysnot.plugins = function () {
